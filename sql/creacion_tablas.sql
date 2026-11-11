@@ -83,14 +83,6 @@ CREATE TABLE Visualiza (
     CONSTRAINT ck_visualiza_like_dislike CHECK (NOT (me_gusta AND no_me_gusta))
 );
 
-
--- Índices sobre claves foráneas para optimizar juntas y agregaciones de estadísticas
-CREATE INDEX idx_canales_usuario ON Canales (nombre_usuario);
-CREATE INDEX idx_videos_canal ON Videos (nombre_canal);
-CREATE INDEX idx_sesuscribea_canal ON SeSuscribeA (nombre_canal);
-CREATE INDEX idx_visualiza_video ON Visualiza (enlace_video);
-
-
 -- Triggers para restricciones de integridad entre tablas
 -- 1) Un video no puede publicarse antes de la creación del canal al que pertenece.
 CREATE OR REPLACE FUNCTION fn_check_fecha_publicacion()
@@ -127,13 +119,11 @@ BEGIN
     WHERE nombre_canal = NEW.nombre_canal;
 
     IF NEW.fecha_suscripcion < c.fecha_creacion THEN
-        RAISE EXCEPTION 'La suscripción (%) no puede ser anterior a la creación del canal (%)', NEW.fecha_suscripcion, c.fecha_creacion
-            USING ERRCODE = '23514';
+        RAISE EXCEPTION 'La suscripción (%) no puede ser anterior a la creación del canal (%)', NEW.fecha_suscripcion, c.fecha_creacion;
     END IF;
 
     IF NEW.nombre_usuario = c.nombre_usuario THEN
-        RAISE EXCEPTION 'Un usuario (%) no puede suscribirse a su propio canal (%)', NEW.nombre_usuario, NEW.nombre_canal
-            USING ERRCODE = '23514';
+        RAISE EXCEPTION 'Un usuario (%) no puede suscribirse a su propio canal (%)', NEW.nombre_usuario, NEW.nombre_canal;
     END IF;
 
     RETURN NEW;

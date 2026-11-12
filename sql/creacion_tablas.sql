@@ -21,7 +21,6 @@ CREATE DOMAIN tarifa_por_vista_t AS NUMERIC(10, 4)
 DEFAULT 0 NOT NULL CHECK (VALUE >= 0);
 
 
--- Creación de tablas del esquema relacional
 CREATE TABLE Usuarios (
     nombre_usuario nombre_usuario_t,
     correo correo_t NOT NULL,
@@ -32,13 +31,13 @@ CREATE TABLE Usuarios (
 );
 
 CREATE TABLE Canales (
-    nombre_canal nombre_canal_t,
+    nombre nombre_canal_t,
     tema VARCHAR(100) NOT NULL,
     tarifa_por_vista tarifa_por_vista_t,
     fecha_creacion DATE NOT NULL DEFAULT CURRENT_DATE,
     nombre_usuario nombre_usuario_t NOT NULL,
-    CONSTRAINT pk_canales PRIMARY KEY (nombre_canal),
-    CONSTRAINT fk_canales_usuario FOREIGN KEY (nombre_usuario)
+    CONSTRAINT canales_pk PRIMARY KEY (nombre),
+    CONSTRAINT canales_usuario_fk FOREIGN KEY (nombre_usuario)
         REFERENCES Usuarios(nombre_usuario)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -48,21 +47,21 @@ CREATE TABLE Videos (
     titulo VARCHAR(200) NOT NULL CHECK (char_length(trim(titulo)) > 0),
     fecha_publicacion DATE NOT NULL DEFAULT CURRENT_DATE,
     nombre_canal nombre_canal_t NOT NULL,
-    CONSTRAINT pk_videos PRIMARY KEY (enlace),
-    CONSTRAINT fk_videos_canal FOREIGN KEY (nombre_canal)
-        REFERENCES Canales(nombre_canal)
+    CONSTRAINT videos_pk PRIMARY KEY (enlace),
+    CONSTRAINT videos_canal_fk FOREIGN KEY (nombre_canal)
+        REFERENCES Canales(nombre)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE SeSuscribeA (
     nombre_usuario nombre_usuario_t,
     nombre_canal nombre_canal_t,
-    fecha_suscripcion DATE NOT NULL DEFAULT CURRENT_DATE,
-    CONSTRAINT pk_sesuscribea PRIMARY KEY (nombre_usuario, nombre_canal),
-    CONSTRAINT fk_sesuscribea_canal FOREIGN KEY (nombre_canal)
-        REFERENCES Canales(nombre_canal)
+    fecha DATE NOT NULL DEFAULT CURRENT_DATE,
+    CONSTRAINT sesuscribea_pk PRIMARY KEY (nombre_usuario, nombre_canal),
+    CONSTRAINT sesuscribea_canal_fk FOREIGN KEY (nombre_canal)
+        REFERENCES Canales(nombre)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_sesuscribea_usuario FOREIGN KEY (nombre_usuario)
+    CONSTRAINT sesuscribea_usuario_fk FOREIGN KEY (nombre_usuario)
         REFERENCES Usuarios(nombre_usuario)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -73,18 +72,18 @@ CREATE TABLE Visualiza (
     cantidad_vistas INT NOT NULL DEFAULT 1 CHECK (cantidad_vistas >= 1),
     me_gusta BOOLEAN NOT NULL DEFAULT FALSE,
     no_me_gusta BOOLEAN NOT NULL DEFAULT FALSE,
-    CONSTRAINT pk_visualiza PRIMARY KEY (nombre_usuario, enlace_video),
-    CONSTRAINT fk_visualiza_video FOREIGN KEY (enlace_video)
+    CONSTRAINT visualiza_pk PRIMARY KEY (nombre_usuario, enlace_video),
+    CONSTRAINT visualiza_video_fk FOREIGN KEY (enlace_video)
         REFERENCES Videos(enlace)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_visualiza_usuario FOREIGN KEY (nombre_usuario)
+    CONSTRAINT visualiza_usuario_fk FOREIGN KEY (nombre_usuario)
         REFERENCES Usuarios(nombre_usuario)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT ck_visualiza_like_dislike CHECK (NOT (me_gusta AND no_me_gusta))
+    CONSTRAINT visualiza_like_dislike_ck CHECK (NOT (me_gusta AND no_me_gusta))
 );
 
--- Triggers para restricciones de integridad entre tablas
--- 1) Un video no puede publicarse antes de la creación del canal al que pertenece.
+
+-- Un video no puede publicarse antes de la creación del canal al que pertenece.
 CREATE OR REPLACE FUNCTION fn_check_fecha_publicacion()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -92,7 +91,7 @@ DECLARE
 BEGIN
     SELECT fecha_creacion INTO fc
     FROM Canales
-    WHERE nombre_canal = NEW.nombre_canal;
+    WHERE nombre = NEW.nombre_canal;
 
     IF NEW.fecha_publicacion < fc THEN
         RAISE EXCEPTION 'El video no puede publicarse (%) antes de la creación del canal (%)', NEW.fecha_publicacion, fc
@@ -108,7 +107,7 @@ BEFORE INSERT OR UPDATE OF fecha_publicacion, nombre_canal ON Videos
 FOR EACH ROW EXECUTE FUNCTION fn_check_fecha_publicacion();
 
 
--- 2) Una suscripción no puede ser anterior a la creación del canal ni del propio dueño del canal.
+-- Una suscripción no puede ser anterior a la creación del canal, y un usuario no puede suscribirse a su propio canal.
 CREATE OR REPLACE FUNCTION fn_check_suscripcion()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -116,10 +115,10 @@ DECLARE
 BEGIN
     SELECT * INTO c
     FROM Canales
-    WHERE nombre_canal = NEW.nombre_canal;
+    WHERE nombre = NEW.nombre_canal;
 
-    IF NEW.fecha_suscripcion < c.fecha_creacion THEN
-        RAISE EXCEPTION 'La suscripción (%) no puede ser anterior a la creación del canal (%)', NEW.fecha_suscripcion, c.fecha_creacion;
+    IF NEW.fecha < c.fecha_creacion THEN
+        RAISE EXCEPTION 'La suscripción (%) no puede ser anterior a la creación del canal (%)', NEW.fecha, c.fecha_creacion;
     END IF;
 
     IF NEW.nombre_usuario = c.nombre_usuario THEN

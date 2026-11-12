@@ -36,7 +36,7 @@ INSERT INTO Usuarios (nombre_usuario, correo, pais, cantidad_inicios) VALUES
 -- ---------------------------------------------------------------------
 -- 2) CANALES 
 -- ---------------------------------------------------------------------
-INSERT INTO Canales (nombre_canal, tema, tarifa_por_vista, fecha_creacion, nombre_usuario) VALUES
+INSERT INTO Canales (nombre, tema, tarifa_por_vista, fecha_creacion, nombre_usuario) VALUES
     ('Código Abierto',         'Programación',            0.0035, '2019-03-15', 'gonza_ruiz'),
     ('Gamer Andino',       'Videojuegos',             0.0050, '2018-07-01', 'juanpe_gamer'),
     ('La Cocina de Cami',  'Cocina',                  0.0028, '2020-05-10', 'cami_cocina'),
@@ -54,7 +54,7 @@ INSERT INTO Canales (nombre_canal, tema, tarifa_por_vista, fecha_creacion, nombr
     ('Retro Pixel',        'Videojuegos retro',       0.0020, '2023-08-15', 'gonza_ruiz');
 
 -- Canal con valores por defecto (tarifa 0, fecha de hoy)
-INSERT INTO Canales (nombre_canal, tema, nombre_usuario) VALUES
+INSERT INTO Canales (nombre, tema, nombre_usuario) VALUES
     ('Recién Llegado', 'Varios', 'lucia_r');
 
 
@@ -144,7 +144,7 @@ INSERT INTO Videos (enlace, titulo, nombre_canal) VALUES
 -- ---------------------------------------------------------------------
 -- 4) SESUSCRIBEA
 -- ---------------------------------------------------------------------
-INSERT INTO SeSuscribeA (nombre_usuario, nombre_canal, fecha_suscripcion) VALUES
+INSERT INTO SeSuscribeA (nombre_usuario, nombre_canal, fecha) VALUES
     ('sofi_martinez', 'Código Abierto',         '2019-05-01'),
     ('sofi_martinez', 'La Cocina de Cami',  '2020-06-01'),
     ('sofi_martinez', 'Entre Páginas',      '2020-04-12'),

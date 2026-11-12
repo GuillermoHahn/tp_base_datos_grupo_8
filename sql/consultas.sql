@@ -21,10 +21,10 @@ WITH suscripciones_canales AS (
     FROM SeSuscribeA
     GROUP BY nombre_canal
 )
-SELECT c.nombre_canal, c.tema, c.fecha_creacion, s.cantidad_suscriptores
+SELECT c.nombre, c.tema, c.fecha_creacion, s.cantidad_suscriptores
 FROM suscripciones_canales s
 INNER JOIN Canales c 
-ON c.nombre_canal = s.nombre_canal
+ON c.nombre = s.nombre_canal
 WHERE s.cantidad_suscriptores = (SELECT MAX(cantidad_suscriptores)
                                  FROM suscripciones_canales);
 

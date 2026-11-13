@@ -1,100 +1,102 @@
-
--- Creación del schema del sistema
+-- Creación del schema 
 CREATE SCHEMA IF NOT EXISTS plataforma_videos;
 
+SET search_path TO plataforma_videos;
+
+
 -- Creación de dominios y validaciones de atributos
-CREATE DOMAIN plataforma_videos.nombre_usuario_t AS VARCHAR(64)
+CREATE DOMAIN nombre_usuario_t AS VARCHAR(64)
 CHECK (char_length(trim(VALUE)) > 0);
 
-CREATE DOMAIN plataforma_videos.enlace_t AS VARCHAR(255)
+CREATE DOMAIN enlace_t AS VARCHAR(255)
 CHECK (char_length(trim(VALUE)) > 0);
 
-CREATE DOMAIN plataforma_videos.nombre_canal_t AS VARCHAR(100)
+CREATE DOMAIN nombre_canal_t AS VARCHAR(100)
 CHECK (char_length(trim(VALUE)) > 0);
 
 -- Validación básica de formato de correo electrónico
-CREATE DOMAIN plataforma_videos.correo_t AS VARCHAR(120)
+CREATE DOMAIN correo_t AS VARCHAR(120)
 CHECK (VALUE ~ '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]+$');
 
 -- Conjunto válido de países permitidos
-CREATE DOMAIN plataforma_videos.pais_t AS VARCHAR(32)
+CREATE DOMAIN pais_t AS VARCHAR(32)
 CHECK (VALUE IN ('Argentina', 'Chile', 'Brasil', 'Paraguay', 'Uruguay'));
 
 -- Dominio monetario
-CREATE DOMAIN plataforma_videos.tarifa_por_vista_t AS NUMERIC(10, 4)
+CREATE DOMAIN tarifa_por_vista_t AS NUMERIC(10, 4)
 DEFAULT 0 NOT NULL CHECK (VALUE >= 0);
 
 
 -- Creación de tablas del esquema relacional
-CREATE TABLE plataforma_videos.Usuarios (
-    nombre_usuario plataforma_videos.nombre_usuario_t,
-    correo plataforma_videos.correo_t NOT NULL,
-    pais plataforma_videos.pais_t NOT NULL,
+CREATE TABLE Usuarios (
+    nombre_usuario nombre_usuario_t,
+    correo correo_t NOT NULL,
+    pais pais_t NOT NULL,
     cantidad_inicios INT NOT NULL DEFAULT 0 CHECK (cantidad_inicios >= 0),
     CONSTRAINT pk_usuarios PRIMARY KEY (nombre_usuario),
     CONSTRAINT uq_usuarios_correo UNIQUE (correo)
 );
 
-CREATE TABLE plataforma_videos.Canales (
-    nombre plataforma_videos.nombre_canal_t,
+CREATE TABLE Canales (
+    nombre nombre_canal_t,
     tema VARCHAR(100) NOT NULL,
-    tarifa_por_vista plataforma_videos.tarifa_por_vista_t,
+    tarifa_por_vista tarifa_por_vista_t,
     fecha_creacion DATE NOT NULL DEFAULT CURRENT_DATE,
-    nombre_usuario plataforma_videos.nombre_usuario_t NOT NULL,
+    nombre_usuario nombre_usuario_t NOT NULL,
     CONSTRAINT canales_pk PRIMARY KEY (nombre),
     CONSTRAINT canales_usuario_fk FOREIGN KEY (nombre_usuario)
-        REFERENCES plataforma_videos.Usuarios(nombre_usuario)
+        REFERENCES Usuarios(nombre_usuario)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE plataforma_videos.Videos (
-    enlace plataforma_videos.enlace_t,
+CREATE TABLE Videos (
+    enlace enlace_t,
     titulo VARCHAR(200) NOT NULL CHECK (char_length(trim(titulo)) > 0),
     fecha_publicacion DATE NOT NULL DEFAULT CURRENT_DATE,
-    nombre_canal plataforma_videos.nombre_canal_t NOT NULL,
+    nombre_canal nombre_canal_t NOT NULL,
     CONSTRAINT videos_pk PRIMARY KEY (enlace),
     CONSTRAINT videos_canal_fk FOREIGN KEY (nombre_canal)
-        REFERENCES plataforma_videos.Canales(nombre)
+        REFERENCES Canales(nombre)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE plataforma_videos.SeSuscribeA (
-    nombre_usuario plataforma_videos.nombre_usuario_t,
-    nombre_canal plataforma_videos.nombre_canal_t,
+CREATE TABLE SeSuscribeA (
+    nombre_usuario nombre_usuario_t,
+    nombre_canal nombre_canal_t,
     fecha DATE NOT NULL DEFAULT CURRENT_DATE,
     CONSTRAINT sesuscribea_pk PRIMARY KEY (nombre_usuario, nombre_canal),
     CONSTRAINT sesuscribea_canal_fk FOREIGN KEY (nombre_canal)
-        REFERENCES plataforma_videos.Canales(nombre)
+        REFERENCES Canales(nombre)
         ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT sesuscribea_usuario_fk FOREIGN KEY (nombre_usuario)
-        REFERENCES plataforma_videos.Usuarios(nombre_usuario)
+        REFERENCES Usuarios(nombre_usuario)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE plataforma_videos.Visualiza (
-    nombre_usuario plataforma_videos.nombre_usuario_t,
-    enlace_video plataforma_videos.enlace_t,
+CREATE TABLE Visualiza (
+    nombre_usuario nombre_usuario_t,
+    enlace_video enlace_t,
     cantidad_vistas INT NOT NULL DEFAULT 1 CHECK (cantidad_vistas >= 1),
     me_gusta BOOLEAN NOT NULL DEFAULT FALSE,
     no_me_gusta BOOLEAN NOT NULL DEFAULT FALSE,
     CONSTRAINT visualiza_pk PRIMARY KEY (nombre_usuario, enlace_video),
     CONSTRAINT visualiza_video_fk FOREIGN KEY (enlace_video)
-        REFERENCES plataforma_videos.Videos(enlace)
+        REFERENCES Videos(enlace)
         ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT visualiza_usuario_fk FOREIGN KEY (nombre_usuario)
-        REFERENCES plataforma_videos.Usuarios(nombre_usuario)
+        REFERENCES Usuarios(nombre_usuario)
         ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT visualiza_like_dislike_ck CHECK (NOT (me_gusta AND no_me_gusta))
 );
 
 -- Un video no puede publicarse antes de la creación del canal al que pertenece.
-CREATE OR REPLACE FUNCTION plataforma_videos.fn_check_fecha_publicacion()
+CREATE OR REPLACE FUNCTION fn_check_fecha_publicacion()
 RETURNS TRIGGER AS $$
 DECLARE
     fc DATE;
 BEGIN
     SELECT fecha_creacion INTO fc
-    FROM plataforma_videos.Canales
+    FROM Canales
     WHERE nombre = NEW.nombre_canal;
 
     IF NEW.fecha_publicacion < fc THEN
@@ -107,18 +109,18 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER tg_check_fecha_publicacion
-BEFORE INSERT OR UPDATE OF fecha_publicacion, nombre_canal ON plataforma_videos.Videos
-FOR EACH ROW EXECUTE FUNCTION plataforma_videos.fn_check_fecha_publicacion();
+BEFORE INSERT OR UPDATE OF fecha_publicacion, nombre_canal ON Videos
+FOR EACH ROW EXECUTE FUNCTION fn_check_fecha_publicacion();
 
 
 --  Una suscripción no puede ser anterior a la creación del canal, y un usuario no puede suscribirse a su propio canal.
-CREATE OR REPLACE FUNCTION plataforma_videos.fn_check_suscripcion()
+CREATE OR REPLACE FUNCTION fn_check_suscripcion()
 RETURNS TRIGGER AS $$
 DECLARE
-    c plataforma_videos.Canales%ROWTYPE;
+    c Canales%ROWTYPE;
 BEGIN
     SELECT * INTO c
-    FROM plataforma_videos.Canales
+    FROM Canales
     WHERE nombre = NEW.nombre_canal;
 
     IF NEW.fecha < c.fecha_creacion THEN
@@ -134,5 +136,5 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER tg_check_suscripcion
-BEFORE INSERT OR UPDATE ON plataforma_videos.SeSuscribeA
-FOR EACH ROW EXECUTE FUNCTION plataforma_videos.fn_check_suscripcion();
+BEFORE INSERT OR UPDATE ON SeSuscribeA
+FOR EACH ROW EXECUTE FUNCTION fn_check_suscripcion();

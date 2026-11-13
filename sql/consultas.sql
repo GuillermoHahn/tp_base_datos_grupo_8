@@ -46,7 +46,7 @@ WITH suscripciones_canales AS (
     FROM plataforma_videos.SeSuscribeA
     GROUP BY nombre_canal
 )
-SELECT c.nombre_canal, c.tema, c.fecha_creacion, s.cantidad_suscriptores
+SELECT c.nombre, c.tema, c.fecha_creacion, s.cantidad_suscriptores
 FROM suscripciones_canales s
 INNER JOIN plataforma_videos.Canales c 
 ON c.nombre_canal = s.nombre_canal

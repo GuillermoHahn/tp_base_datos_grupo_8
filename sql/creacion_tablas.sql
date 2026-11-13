@@ -36,7 +36,7 @@ CREATE TABLE plataforma_videos.Usuarios (
 );
 
 CREATE TABLE plataforma_videos.Canales (
-    nombre_canal plataforma_videos.nombre_canal_t,
+    nombre plataforma_videos.nombre_canal_t,
     tema VARCHAR(100) NOT NULL,
     tarifa_por_vista plataforma_videos.tarifa_por_vista_t,
     fecha_creacion DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -54,7 +54,7 @@ CREATE TABLE plataforma_videos.Videos (
     nombre_canal plataforma_videos.nombre_canal_t NOT NULL,
     CONSTRAINT videos_pk PRIMARY KEY (enlace),
     CONSTRAINT videos_canal_fk FOREIGN KEY (nombre_canal)
-        REFERENCES plataforma_videos.Canales(nombre_canal)
+        REFERENCES plataforma_videos.Canales(nombre)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -64,7 +64,7 @@ CREATE TABLE plataforma_videos.SeSuscribeA (
     fecha DATE NOT NULL DEFAULT CURRENT_DATE,
     CONSTRAINT sesuscribea_pk PRIMARY KEY (nombre_usuario, nombre_canal),
     CONSTRAINT sesuscribea_canal_fk FOREIGN KEY (nombre_canal)
-        REFERENCES plataforma_videos.Canales(nombre_canal)
+        REFERENCES plataforma_videos.Canales(nombre)
         ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT sesuscribea_usuario_fk FOREIGN KEY (nombre_usuario)
         REFERENCES plataforma_videos.Usuarios(nombre_usuario)

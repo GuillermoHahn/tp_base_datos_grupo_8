@@ -1,7 +1,7 @@
 
 -- Crear un canal
 -- El creador debe ser un usuario existente (FK a Usuarios).
-INSERT INTO plataforma_videos.Canales (nombre_canal, tema, tarifa_por_vista, fecha_creacion, nombre_usuario)
+INSERT INTO plataforma_videos.Canales (nombre, tema, tarifa_por_vista, fecha_creacion, nombre_usuario)
 VALUES ('Taller de Flor', 'Arte', 0.0030, '2026-11-01', 'flor_arte');
 
 -- Editar un canal
@@ -9,18 +9,18 @@ VALUES ('Taller de Flor', 'Arte', 0.0030, '2026-11-01', 'flor_arte');
 UPDATE plataforma_videos.Canales
 SET tema             = 'Ajedrez y estrategia',
     tarifa_por_vista = 0.0018
-WHERE nombre_canal = 'Jaque al Rey';
+WHERE nombre = 'Jaque al Rey';
 
 -- Cambiar el nombre (clave primaria) del canal.
 -- Por ON UPDATE CASCADE el nuevo nombre se propaga a Videos y SeSuscribeA.
 UPDATE plataforma_videos.Canales
-SET nombre_canal = 'Jaque Mate'
-WHERE nombre_canal = 'Jaque al Rey';
+SET nombre = 'Jaque Mate'
+WHERE nombre = 'Jaque al Rey';
 
 -- Eliminar un canal
 -- Por ON DELETE CASCADE también se eliminan sus videos (y las visualizaciones de esos videos) y sus suscripciones.
 DELETE FROM plataforma_videos.Canales
-WHERE nombre_canal = 'Retro Pixel';
+WHERE nombre = 'Retro Pixel';
 
 
 -- Listado de los videos más populares (con más "me gusta")
@@ -49,7 +49,7 @@ WITH suscripciones_canales AS (
 SELECT c.nombre, c.tema, c.fecha_creacion, s.cantidad_suscriptores
 FROM suscripciones_canales s
 INNER JOIN plataforma_videos.Canales c 
-ON c.nombre_canal = s.nombre_canal
+ON c.nombre = s.nombre_canal
 WHERE s.cantidad_suscriptores = (SELECT MAX(cantidad_suscriptores)
                                  FROM suscripciones_canales);
 

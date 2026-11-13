@@ -3,7 +3,7 @@ BEGIN;
 -- ---------------------------------------------------------------------
 -- 1) USUARIOS 
 -- ---------------------------------------------------------------------
-INSERT INTO Usuarios (nombre_usuario, correo, pais, cantidad_inicios) VALUES
+INSERT INTO plataforma_videos.Usuarios (nombre_usuario, correo, pais, cantidad_inicios) VALUES
     ('gonza_ruiz',     'gonzalo.ruiz@gmail.com',          'Argentina', 152),
     ('sofi_martinez',  'sofia.martinez@hotmail.com',       'Argentina',  87),
     ('juanpe_gamer',   'juanpablo.gamer@yahoo.com',        'Chile',     340),
@@ -25,18 +25,18 @@ INSERT INTO Usuarios (nombre_usuario, correo, pais, cantidad_inicios) VALUES
 
 
 -- Usuario que usa el DEFAULT de cantidad_inicios (queda en 0)
-INSERT INTO Usuarios (nombre_usuario, correo, pais) VALUES
+INSERT INTO plataforma_videos.Usuarios (nombre_usuario, correo, pais) VALUES
     ('martin_r', 'martin.rodriguez@adinet.com.uy', 'Uruguay');
 
 -- Usuario con un solo inicio de sesión
-INSERT INTO Usuarios (nombre_usuario, correo, pais, cantidad_inicios) VALUES
+INSERT INTO plataforma_videos.Usuarios (nombre_usuario, correo, pais, cantidad_inicios) VALUES
     ('lucia_r', 'lucia.ramos@gmail.com', 'Uruguay', 1);
 
 
 -- ---------------------------------------------------------------------
 -- 2) CANALES 
 -- ---------------------------------------------------------------------
-INSERT INTO Canales (nombre_canal, tema, tarifa_por_vista, fecha_creacion, nombre_usuario) VALUES
+INSERT INTO plataforma_videos.Canales (nombre_canal, tema, tarifa_por_vista, fecha_creacion, nombre_usuario) VALUES
     ('Código Abierto',         'Programación',            0.0035, '2019-03-15', 'gonza_ruiz'),
     ('Gamer Andino',       'Videojuegos',             0.0050, '2018-07-01', 'juanpe_gamer'),
     ('La Cocina de Cami',  'Cocina',                  0.0028, '2020-05-10', 'cami_cocina'),
@@ -54,14 +54,14 @@ INSERT INTO Canales (nombre_canal, tema, tarifa_por_vista, fecha_creacion, nombr
     ('Retro Pixel',        'Videojuegos retro',       0.0020, '2023-08-15', 'gonza_ruiz');
 
 -- Canal con valores por defecto (tarifa 0, fecha de hoy)
-INSERT INTO Canales (nombre_canal, tema, nombre_usuario) VALUES
+INSERT INTO plataforma_videos.Canales (nombre_canal, tema, nombre_usuario) VALUES
     ('Recién Llegado', 'Varios', 'lucia_r');
 
 
 -- ---------------------------------------------------------------------
 -- 3) VIDEOS 
 -- ---------------------------------------------------------------------
-INSERT INTO Videos (enlace, titulo, fecha_publicacion, nombre_canal) VALUES
+INSERT INTO plataforma_videos.Videos (enlace, titulo, fecha_publicacion, nombre_canal) VALUES
     -- Código Abierto (creado 2019-03-15)
     ('https://youtu.be/Fc01SqlBas1', 'Introducción a SQL: SELECT desde cero',           '2019-04-02', 'Código Abierto'),
     ('https://youtu.be/Fc02JoinEx2', 'JOINs explicados con ejemplos',                   '2019-06-20', 'Código Abierto'),
@@ -137,14 +137,14 @@ INSERT INTO Videos (enlace, titulo, fecha_publicacion, nombre_canal) VALUES
 
 
 -- Video que usa el DEFAULT de fecha_publicacion (CURRENT_DATE),
-INSERT INTO Videos (enlace, titulo, nombre_canal) VALUES
+INSERT INTO plataforma_videos.Videos (enlace, titulo, nombre_canal) VALUES
     ('https://youtu.be/Rl01Hola001', 'Mi primer video', 'Recién Llegado');
 
 
 -- ---------------------------------------------------------------------
 -- 4) SESUSCRIBEA
 -- ---------------------------------------------------------------------
-INSERT INTO SeSuscribeA (nombre_usuario, nombre_canal, fecha_suscripcion) VALUES
+INSERT INTO plataforma_videos.SeSuscribeA (nombre_usuario, nombre_canal, fecha_suscripcion) VALUES
     ('sofi_martinez', 'Código Abierto',         '2019-05-01'),
     ('sofi_martinez', 'La Cocina de Cami',  '2020-06-01'),
     ('sofi_martinez', 'Entre Páginas',      '2020-04-12'),
@@ -213,7 +213,7 @@ INSERT INTO SeSuscribeA (nombre_usuario, nombre_canal, fecha_suscripcion) VALUES
 
 
 -- Suscripciones con DEFAULT de fecha_suscripcion (CURRENT_DATE)
-INSERT INTO SeSuscribeA (nombre_usuario, nombre_canal) VALUES
+INSERT INTO plataforma_videos.SeSuscribeA (nombre_usuario, nombre_canal) VALUES
     ('sofi_martinez', 'Recién Llegado'),
     ('hugo_campo',    'Recién Llegado');
 
@@ -221,7 +221,7 @@ INSERT INTO SeSuscribeA (nombre_usuario, nombre_canal) VALUES
 -- ---------------------------------------------------------------------
 -- 5) VISUALIZA 
 -- ---------------------------------------------------------------------
-INSERT INTO Visualiza (nombre_usuario, enlace_video, cantidad_vistas, me_gusta, no_me_gusta) VALUES
+INSERT INTO plataforma_videos.Visualiza (nombre_usuario, enlace_video, cantidad_vistas, me_gusta, no_me_gusta) VALUES
     -- sofi_martinez
     ('sofi_martinez', 'https://youtu.be/Fc01SqlBas1',  3, TRUE,  FALSE),
     ('sofi_martinez', 'https://youtu.be/Fc02JoinEx2',  2, TRUE,  FALSE),
@@ -342,14 +342,14 @@ INSERT INTO Visualiza (nombre_usuario, enlace_video, cantidad_vistas, me_gusta, 
     ('lucas_tech',    'https://youtu.be/Tb04IAgen04',  9, FALSE, FALSE);
 
 -- Visualizaciones con DEFAULT (cantidad_vistas = 1, sin me gusta / no me gusta)
-INSERT INTO Visualiza (nombre_usuario, enlace_video) VALUES
+INSERT INTO plataforma_videos.Visualiza (nombre_usuario, enlace_video) VALUES
     ('martin_r',      'https://youtu.be/Ft01Golaco1'),
     ('martin_r',      'https://youtu.be/Cc01Agujer1'),
     ('sofi_martinez', 'https://youtu.be/Rl01Hola001'),
     ('hugo_campo',    'https://youtu.be/Rl01Hola001');
 
 -- Solo indicando me_gusta (el resto toma DEFAULT)
-INSERT INTO Visualiza (nombre_usuario, enlace_video, me_gusta) VALUES
+INSERT INTO plataforma_videos.Visualiza (nombre_usuario, enlace_video, me_gusta) VALUES
     ('lucia_r',       'https://youtu.be/Mh02Floria2', TRUE),
     ('flor_arte',     'https://youtu.be/Cr02Mendoz2', TRUE);
 

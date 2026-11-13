@@ -1,4 +1,4 @@
-
+-- CANAL
 -- Crear un canal
 -- El creador debe ser un usuario existente (FK a Usuarios).
 INSERT INTO Canales (nombre, tema, tarifa_por_vista, fecha_creacion, nombre_usuario)
@@ -22,6 +22,38 @@ WHERE nombre = 'Jaque al Rey';
 DELETE FROM Canales
 WHERE nombre = 'Retro Pixel';
 
+-- VIDEOS
+-- Crear un video
+-- El canal debe existir (FK a Canales) y la fecha de publicacion no puede ser anterior a la creacion del canal.
+INSERT INTO Videos (enlace, titulo, fecha_publicacion, nombre_canal)
+VALUES ('https://youtu.be/Nu01Prueba01', 'video nuevo', '2026-11-05', 'Código Abierto');
+
+-- Editar un video
+-- Se modifica el titulo del video.
+UPDATE Videos
+SET titulo = 'video nuevo (editado)'
+WHERE enlace = 'https://youtu.be/Nu01Prueba01';
+
+-- Se modifica la fecha de publicacion (se vuelve a validar contra la creacion del canal).
+UPDATE Videos
+SET fecha_publicacion = '2026-15-08'
+WHERE enlace = 'https://youtu.be/Nu01Prueba01';
+
+-- Se mueve el video a otro canal.
+UPDATE Videos
+SET nombre_canal = 'Gamer Andino'
+WHERE enlace = 'https://youtu.be/Nu01Prueba01';
+
+-- Cambiar el enlace (clave primaria) del video.
+-- Por ON UPDATE CASCADE el nuevo enlace se propaga a Visualiza.
+UPDATE Videos
+SET enlace = 'https://youtu.be/Nu02Prueba02'
+WHERE enlace = 'https://youtu.be/Nu01Prueba01';
+
+-- Eliminar un video
+-- Por ON DELETE CASCADE tambien se eliminan las visualizaciones de ese video.
+DELETE FROM Videos
+WHERE enlace = 'https://youtu.be/Nu02Prueba02';
 
 -- Listado de los videos más populares (con más "me gusta")
 
@@ -53,7 +85,12 @@ ON c.nombre = s.nombre_canal
 WHERE s.cantidad_suscriptores = (SELECT MAX(cantidad_suscriptores)
                                  FROM suscripciones_canales);
 
+-- Contabilizar la cantidad de usuarios por país.
 
+SELECT pais, COUNT(*) AS cantidad_usuarios
+FROM Usuarios
+GROUP BY pais
+ORDER BY cantidad_usuarios DESC, pais;
 
 
 

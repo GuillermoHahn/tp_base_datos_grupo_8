@@ -36,7 +36,7 @@ WHERE enlace = 'https://youtu.be/Nu01Prueba01';
 
 -- Se modifica la fecha de publicacion (se vuelve a validar contra la creacion del canal).
 UPDATE Videos
-SET fecha_publicacion = '2026-15-08'
+SET fecha_publicacion = '2026-08-15'
 WHERE enlace = 'https://youtu.be/Nu01Prueba01';
 
 -- Se mueve el video a otro canal.
@@ -60,7 +60,7 @@ WHERE enlace = 'https://youtu.be/Nu02Prueba02';
 WITH videos_me_gusta AS (
     SELECT enlace_video, COUNT(*) AS cantidad_me_gusta
     FROM Visualiza
-    WHERE me_gusta = TRUE 
+    WHERE me_gusta = TRUE
     GROUP BY enlace_video
 )
 SELECT v.enlace, v.titulo, v.fecha_publicacion, mg.cantidad_me_gusta
@@ -80,7 +80,7 @@ WITH suscripciones_canales AS (
 )
 SELECT c.nombre, c.tema, c.fecha_creacion, s.cantidad_suscriptores
 FROM suscripciones_canales s
-INNER JOIN Canales c 
+INNER JOIN Canales c
 ON c.nombre = s.nombre_canal
 WHERE s.cantidad_suscriptores = (SELECT MAX(cantidad_suscriptores)
                                  FROM suscripciones_canales);
@@ -92,8 +92,34 @@ FROM Usuarios
 GROUP BY pais
 ORDER BY cantidad_usuarios DESC, pais;
 
+-- USUARIOS
+-- Registrar un usuario
+-- El correo debe ser único y cumplir el formato válido (correo_t), y el país debe pertenecer al dominio pais_t.
+-- Si no se especifica cantidad_inicios, toma el valor por defecto 0.
+INSERT INTO Usuarios (nombre_usuario, correo, pais, cantidad_inicios)
+VALUES ('guille_dev', 'guillermo.hahn@fi.uba.ar', 'Argentina', 6);
 
+-- Editar un usuario
+-- Se modifican el correo, el país y se incrementa el contador de inicios de sesión del usuario.
+UPDATE Usuarios
+SET correo           = 'guille.hahn@gmail.com',
+    pais             = 'Chile',
+    cantidad_inicios = cantidad_inicios + 1
+WHERE nombre_usuario = 'guille_dev';
 
+-- Cambiar el nombre_usuario (clave primaria) de un usuario existente.
+-- Por ON UPDATE CASCADE el nuevo nombre se propaga a Canales, SeSuscribeA y Visualiza.
+UPDATE Usuarios
+SET nombre_usuario = 'tomas_GM'
+WHERE nombre_usuario = 'tomas_ajedrez';
 
+-- Eliminar un usuario
+-- Por ON DELETE CASCADE también se eliminan sus canales (y con ellos sus videos, visualizaciones y suscripciones recibidas),
+-- además de las suscripciones y visualizaciones realizadas por el usuario.
+DELETE FROM Usuarios
+WHERE nombre_usuario = 'hugo_campo';
 
-
+-- Listar todos los usuarios de la aplicación.
+SELECT nombre_usuario, correo, pais, cantidad_inicios
+FROM Usuarios
+ORDER BY nombre_usuario;

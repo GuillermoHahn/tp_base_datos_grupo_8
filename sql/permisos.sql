@@ -15,3 +15,6 @@ CREATE USER usuario_observador WITH PASSWORD 'Prueba1234';
 
 GRANT admin TO usuario_admin;
 GRANT observador TO usuario_observador;
+
+ALTER ROLE usuario_admin      SET search_path TO plataforma_videos;
+ALTER ROLE usuario_observador SET search_path TO plataforma_videos;
